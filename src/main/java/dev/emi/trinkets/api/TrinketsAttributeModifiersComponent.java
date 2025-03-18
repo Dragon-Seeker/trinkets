@@ -30,6 +30,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 
+import io.wispforest.accessories.Accessories;
+import io.wispforest.accessories.api.attributes.SlotAttribute;
+import io.wispforest.accessories.utils.AttributeUtils;
+import io.wispforest.endec.Endec;
+import io.wispforest.endec.impl.StructEndecBuilder;
+import io.wispforest.owo.serialization.CodecUtils;
+import io.wispforest.owo.serialization.RegistriesAttribute;
+import io.wispforest.owo.serialization.endec.MinecraftEndecs;
 import net.minecraft.component.ComponentType;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -107,18 +115,36 @@ public record TrinketsAttributeModifiersComponent(List<Entry> modifiers, boolean
 	}
 
 	public record Entry(RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, Optional<String> slot) {
-		public static final Codec<Entry> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-				Registries.ATTRIBUTE.getEntryCodec().fieldOf("type").forGetter(Entry::attribute),
-				EntityAttributeModifier.MAP_CODEC.forGetter(Entry::modifier),
-				Codec.STRING.optionalFieldOf("slot").forGetter(Entry::slot)
-			).apply(instance, Entry::new));
-		public static final PacketCodec<RegistryByteBuf, Entry> PACKET_CODEC = PacketCodec.tuple(
-				PacketCodecs.registryEntry(RegistryKeys.ATTRIBUTE),
-				Entry::attribute,
-				EntityAttributeModifier.PACKET_CODEC,
-				Entry::modifier,
-				PacketCodecs.optional(PacketCodecs.STRING),
-				Entry::slot,
-				Entry::new);
+		private static final Endec<RegistryEntry<EntityAttribute>> ATTRIBUTE_ENDEC = MinecraftEndecs.IDENTIFIER.xmapWithContext(
+				(context, attributeType) -> {
+					if(attributeType.getNamespace().equals(Accessories.MODID)) return SlotAttribute.getAttributeHolder(attributeType.getPath());
+
+					return context.requireAttributeValue(RegistriesAttribute.REGISTRIES)
+							.registryManager()
+							.get(RegistryKeys.ATTRIBUTE)
+							.getEntry(attributeType)
+							.orElseThrow(IllegalStateException::new);
+				},
+				(context, attributeHolder) -> {
+					var attribute = attributeHolder.value();
+
+					if(attribute instanceof SlotAttribute slotAttribute) return Accessories.of(slotAttribute.slotName());
+
+					return context.requireAttributeValue(RegistriesAttribute.REGISTRIES)
+							.registryManager()
+							.get(RegistryKeys.ATTRIBUTE)
+							.getId(attribute);
+				}
+		);
+
+		public static final Endec<Entry> ENDEC = StructEndecBuilder.of(
+				ATTRIBUTE_ENDEC.fieldOf("type", Entry::attribute),
+				AttributeUtils.ATTRIBUTE_MODIFIER_ENDEC.flatFieldOf(Entry::modifier),
+				Endec.STRING.optionalOf().fieldOf("slot", Entry::slot),
+				Entry::new
+		);
+
+		public static final Codec<Entry> CODEC = CodecUtils.toCodec(ENDEC);
+		public static final PacketCodec<RegistryByteBuf, Entry> PACKET_CODEC = CodecUtils.toPacketCodec(ENDEC);
 	}
 }

@@ -44,6 +44,7 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;setId(I)V"), method = "onPlayerRespawn")
     private void onPlayerRespawn(PlayerRespawnS2CPacket packet, CallbackInfo info, @Local(ordinal = 0) ClientPlayerEntity clientPlayerEntity, @Local(ordinal = 1) ClientPlayerEntity clientPlayerEntity2)  {
+        if (true) return;
         if (packet.hasFlag(PlayerRespawnS2CPacket.KEEP_ATTRIBUTES)) {
             TrinketInventory.copyFrom(clientPlayerEntity, clientPlayerEntity2);
             ((TrinketPlayerScreenHandler) clientPlayerEntity2.playerScreenHandler).trinkets$updateTrinketSlots(false);

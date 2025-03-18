@@ -103,32 +103,32 @@ public class SlotType {
 
 	public void write(NbtCompound data) {
 		NbtCompound tag = new NbtCompound();
-		tag.putString("Group", group);
-		tag.putString("Name", name);
-		tag.putInt("Order", order);
-		tag.putInt("Amount", amount);
-		tag.putString("Icon", icon.toString());
+		tag.putString("Group", this.getGroup());
+		tag.putString("Name", this.getName());
+		tag.putInt("Order", this.getOrder());
+		tag.putInt("Amount", this.getAmount());
+		tag.putString("Icon", this.getIcon().toString());
 		NbtList quickMovePredicateList = new NbtList();
 
-		for (Identifier id : quickMovePredicates) {
+		for (Identifier id : this.getQuickMovePredicates()) {
 			quickMovePredicateList.add(NbtString.of(id.toString()));
 		}
 		tag.put("QuickMovePredicates", quickMovePredicateList);
 
 		NbtList validatorPredicateList = new NbtList();
 
-		for (Identifier id : validatorPredicates) {
+		for (Identifier id : this.getValidatorPredicates()) {
 			validatorPredicateList.add(NbtString.of(id.toString()));
 		}
 		tag.put("ValidatorPredicates", validatorPredicateList);
 
 		NbtList tooltipPredicateList = new NbtList();
 
-		for (Identifier id : tooltipPredicates) {
+		for (Identifier id : this.getTooltipPredicates()) {
 			tooltipPredicateList.add(NbtString.of(id.toString()));
 		}
 		tag.put("TooltipPredicates", tooltipPredicateList);
-		tag.putString("DropRule", dropRule.toString());
+		tag.putString("DropRule", this.getDropRule().toString());
 		data.put("SlotData", tag);
 	}
 
@@ -171,15 +171,15 @@ public class SlotType {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		SlotType slotType = (SlotType) o;
-		return group.equals(slotType.group) && name.equals(slotType.name);
+		return getGroup().equals(slotType.getGroup()) && getName().equals(slotType.getName());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(group, name);
+		return Objects.hash(getGroup(), getName());
 	}
 
 	public String getId() {
-		return this.group + "/" + this.name;
+		return this.getGroup() + "/" + this.getName();
 	}
 }

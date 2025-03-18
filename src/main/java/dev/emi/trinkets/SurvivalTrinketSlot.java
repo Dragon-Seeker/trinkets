@@ -59,7 +59,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public boolean canInsert(ItemStack stack) {
-		return TrinketSlot.canInsert(stack, new SlotReference(trinketInventory, slotOffset), trinketInventory.getComponent().getEntity());
+		return TrinketSlot.canInsert(stack, new SlotReference(trinketInventory, slotOffset), trinketInventory.getComponent().entity());
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	public boolean isEnabled() {
 		if (alwaysVisible) {
 			if (x < 0) {
-				World world = trinketInventory.getComponent().getEntity().getWorld();
+				World world = trinketInventory.getComponent().entity().getWorld();
 				if (world.isClient) {
 					MinecraftClient client = MinecraftClient.getInstance();
 					Screen s = client.currentScreen;

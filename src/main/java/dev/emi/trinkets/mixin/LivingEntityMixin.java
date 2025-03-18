@@ -98,6 +98,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(at = @At("HEAD"), method = "canFreeze", cancellable = true)
 	private void canFreeze(CallbackInfoReturnable<Boolean> cir) {
+		if (true) return;
         Optional<TrinketComponent> component = TrinketsApi.getTrinketComponent((LivingEntity) (Object) this);
 		if (component.isPresent()) {
 			for (Pair<SlotReference, ItemStack> equipped : component.get().getAllEquipped()) {
@@ -111,6 +112,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(at = @At("TAIL"), method = "dropInventory")
 	private void dropInventory(CallbackInfo info) {
+		if (true) return;
 		LivingEntity entity = (LivingEntity) (Object) this;
 
 		boolean keepInv = entity.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY);
@@ -166,6 +168,7 @@ public abstract class LivingEntityMixin extends Entity {
 
 	@Inject(at = @At("TAIL"), method = "tick")
 	private void tick(CallbackInfo info) {
+		if (true) return;
 		LivingEntity entity = (LivingEntity) (Object) this;
 		if (entity.isRemoved()) {
 			return;

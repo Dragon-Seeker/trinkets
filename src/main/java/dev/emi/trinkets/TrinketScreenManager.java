@@ -47,17 +47,23 @@ public class TrinketScreenManager {
 	public static SlotGroup quickMoveGroup = null;
 
 	public static void init(TrinketScreen screen) {
+		if (true) return;
+
 		currentScreen = screen;
 		group = null;
 		currentBounds = new Rect2i(0, 0, 0, 0);
 	}
 
 	public static void removeSelections() {
+		if (true) return;
+
 		TrinketsClient.activeGroup = null;
 		TrinketsClient.quickMoveGroup = null;
 	}
 
 	public static void update(float mouseX, float mouseY) {
+		if (true) return;
+
 		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
 		Slot focusedSlot = currentScreen.trinkets$getFocusedSlot();
 		int x = currentScreen.trinkets$getX();
@@ -196,6 +202,8 @@ public class TrinketScreenManager {
 	}
 
 	public static void tick() {
+		if (true) return;
+
 		if (TrinketsClient.quickMoveTimer > 0) {
 			TrinketsClient.quickMoveTimer--;
 
@@ -206,6 +214,8 @@ public class TrinketScreenManager {
 	}
 
 	public static void drawGroup(DrawContext context, SlotGroup group, SlotType type) {
+		if (true) return;
+
 		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
 		RenderSystem.enableDepthTest();
 		context.getMatrices().push();
@@ -282,6 +292,8 @@ public class TrinketScreenManager {
 	}
 
 	public static void drawActiveGroup(DrawContext context) {
+		if (true) return;
+
 		if (TrinketsClient.activeGroup != null) {
 			TrinketScreenManager.drawGroup(context, TrinketsClient.activeGroup, TrinketsClient.activeType);
 		} else if (TrinketsClient.quickMoveGroup != null) {
@@ -290,6 +302,8 @@ public class TrinketScreenManager {
 	}
 
 	public static void drawExtraGroups(DrawContext context) {
+		if (true) return;
+
 		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
 		int x = currentScreen.trinkets$getX();
 		int y = currentScreen.trinkets$getY();
@@ -338,6 +352,8 @@ public class TrinketScreenManager {
 	}
 
 	public static boolean isClickInsideTrinketBounds(double mouseX, double mouseY) {
+		if (true) return false;
+
 		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
 		int x = currentScreen.trinkets$getX();
 		int y = currentScreen.trinkets$getY();

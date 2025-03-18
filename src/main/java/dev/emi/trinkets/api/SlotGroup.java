@@ -26,21 +26,30 @@ package dev.emi.trinkets.api;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.nbt.NbtCompound;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class SlotGroup {
+public class SlotGroup {
 
 	private final String name;
 	private final int slotId;
 	private final int order;
 	private final Map<String, SlotType> slots;
 
-	private SlotGroup(Builder builder) {
+	protected SlotGroup(Builder builder) {
 		this.name = builder.name;
 		this.slots = builder.slots;
 		this.slotId = builder.slotId;
 		this.order = builder.order;
+	}
+
+	protected SlotGroup(String name, int slotId, int order, Map<String, SlotType> slots) {
+		this.name = name;
+		this.slotId = slotId;
+		this.order = order;
+		this.slots = slots;
 	}
 
 	public int getSlotId() {
@@ -56,7 +65,7 @@ public final class SlotGroup {
 	}
 
 	public Map<String, SlotType> getSlots() {
-		return ImmutableMap.copyOf(slots);
+		return Collections.unmodifiableMap(slots);
 	}
 
 	public void write(NbtCompound data) {

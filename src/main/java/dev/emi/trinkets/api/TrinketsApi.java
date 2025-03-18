@@ -26,16 +26,25 @@ package dev.emi.trinkets.api;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Function3;
+import com.mojang.logging.LogUtils;
 import dev.emi.trinkets.TrinketModifiers;
 import dev.emi.trinkets.TrinketSlotTarget;
 import dev.emi.trinkets.TrinketsMain;
 import dev.emi.trinkets.data.EntitySlotLoader;
 import dev.emi.trinkets.payload.BreakPayload;
+import io.wispforest.accessories.Accessories;
+import io.wispforest.accessories.api.AccessoriesAPI;
+import io.wispforest.accessories.api.AccessoriesCapability;
+import io.wispforest.accessories.api.attributes.AccessoryAttributeBuilder;
+import io.wispforest.accessories.api.slot.EntityBasedPredicate;
+import io.wispforest.accessories.data.SlotTypeLoader;
+import io.wispforest.tclayer.compat.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
+import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
 import net.fabricmc.api.EnvType;
@@ -54,13 +63,11 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import net.minecraft.world.World;
+import org.slf4j.Logger;
 
 public class TrinketsApi {
 	public static final ComponentKey<TrinketComponent> TRINKET_COMPONENT = ComponentRegistryV3.INSTANCE
@@ -79,7 +86,18 @@ public class TrinketsApi {
 	}
 
 	public static Trinket getTrinket(Item item) {
-		return TRINKETS.getOrDefault(item, DEFAULT_TRINKET);
+		var trinket = TRINKETS.get(item);
+
+		if(trinket == null) {
+			var accessory = AccessoriesAPI.getAccessory(item);
+
+			if(accessory != null) trinket = new WrappedAccessory(accessory);
+		}
+
+		//TODO: Maybe check for valid slots if any and return different wrapped accessory as a way of indicating this item is for sure a valid trinket for things like Compound Accessories
+		if(trinket == null) return DEFAULT_TRINKET;
+
+		return trinket;
 	}
 
 	public static Trinket getDefaultTrinket() {
@@ -90,7 +108,11 @@ public class TrinketsApi {
 	 * @return The trinket component for this entity, if available
 	 */
 	public static Optional<TrinketComponent> getTrinketComponent(LivingEntity livingEntity) {
-		return TRINKET_COMPONENT.maybeGet(livingEntity);
+		if(livingEntity == null) return Optional.empty();
+
+		var capability = AccessoriesCapability.get(livingEntity);
+
+		return Optional.of(capability != null ? new WrappedTrinketComponent(livingEntity) : new EmptyComponent(livingEntity));
 	}
 
 	/**
@@ -98,16 +120,11 @@ public class TrinketsApi {
 	 * called in the callback of {@link ItemStack#damage(int, ServerWorld, ServerPlayerEntity, Consumer)}
 	 */
 	public static void onTrinketBroken(ItemStack stack, SlotReference ref, LivingEntity entity) {
-		World world = entity.getWorld();
-		if (!world.isClient) {
-			BreakPayload packet = new BreakPayload(entity.getId(), ref.inventory().getSlotType().getGroup(), ref.inventory().getSlotType().getName(), ref.index());
-			if (entity instanceof ServerPlayerEntity player) {
-				ServerPlayNetworking.send(player, packet);
-			}
-			PlayerLookup.tracking(entity).forEach(watcher -> {
-				ServerPlayNetworking.send(watcher, packet);
-			});
-		}
+		var slotName = ((WrappedTrinketInventory) ref.inventory()).container.getSlotName();
+
+		var reference = io.wispforest.accessories.api.slot.SlotReference.of(entity, slotName, ref.index());
+
+		AccessoriesAPI.breakStack(reference);
 	}
 
 	/**
@@ -169,6 +186,8 @@ public class TrinketsApi {
 	 */
 	public static void registerTrinketPredicate(Identifier id, Function3<ItemStack, SlotReference, LivingEntity, TriState> predicate) {
 		PREDICATES.put(id, predicate);
+
+		AccessoriesAPI.registerPredicate(id, new SafeSlotBasedPredicate(id, predicate));
 	}
 
 	public static Optional<Function3<ItemStack, SlotReference, LivingEntity, TriState>> getTrinketPredicate(Identifier id) {
@@ -176,17 +195,29 @@ public class TrinketsApi {
 	}
 
 	public static boolean evaluatePredicateSet(Set<Identifier> set, ItemStack stack, SlotReference ref, LivingEntity entity) {
-		TriState state = TriState.DEFAULT;
-		for (Identifier id : set) {
-			Optional<Function3<ItemStack, SlotReference, LivingEntity, TriState>> function = getTrinketPredicate(id);
-			if (function.isPresent()) {
-				state = function.get().apply(stack, ref, entity);
-			}
-			if (state != TriState.DEFAULT) {
-				break;
-			}
+		var convertedSet = new HashSet<Identifier>();
+
+		for (var location : set) {
+			var converetdLocation = switch (location.toString()){
+				case "trinkets:all" -> Accessories.of("all");
+				case "trinkets:none" -> Accessories.of("none");
+				case "trinkets:tag" -> Accessories.of("tag");
+				case "trinkets:relevant" -> Accessories.of("relevant");
+				default -> location;
+			};
+
+			convertedSet.add(converetdLocation);
 		}
-		return state.get();
+
+		var slotName = ((WrappedTrinketInventory) ref.inventory()).container.getSlotName();
+
+		var slotType = SlotTypeLoader.getSlotType(entity.getWorld(), slotName);
+
+		if(slotType == null) {
+			throw new IllegalStateException("Unable to get a SlotType using the WrappedTrinketInventory from the SlotTypeLoader! [Name: " + slotName +"]");
+		}
+
+		return AccessoriesAPI.getPredicateResults(convertedSet, entity.getWorld(), entity, slotType, ref.index(), stack);
 	}
 
 	public static Enchantment.Definition withTrinketSlots(Enchantment.Definition definition, Set<String> slots) {
@@ -212,14 +243,49 @@ public class TrinketsApi {
 			return TriState.DEFAULT;
 		});
 		TrinketsApi.registerTrinketPredicate(Identifier.of("trinkets", "relevant"), (stack, ref, entity) -> {
-			Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> map = TrinketModifiers.get(stack, ref, entity);
-			if (!map.isEmpty()) {
-				return TriState.TRUE;
-			}
+			var reference = io.wispforest.accessories.api.slot.SlotReference.of(entity, ref.inventory().getSlotType().getName(), ref.index());
+			var builder = new AccessoryAttributeBuilder(reference);
+
+			var accessory = AccessoriesAPI.getOrDefaultAccessory(stack);
+
+			if(accessory != null) accessory.getDynamicModifiers(stack, reference, builder);
+
+			if (!builder.getAttributeModifiers(false).isEmpty()) return TriState.TRUE;
 			return TriState.DEFAULT;
 		});
-		DEFAULT_TRINKET = new Trinket() {
+		DEFAULT_TRINKET = new WrappedAccessory(AccessoriesAPI.defaultAccessory());
+	}
 
-		};
+	private final static class SafeSlotBasedPredicate implements EntityBasedPredicate {
+		private static final Logger LOGGER = LogUtils.getLogger();
+		private boolean hasErrored = false;
+
+		private final Identifier location;
+		private final Function3<ItemStack, SlotReference, LivingEntity, TriState> trinketPredicate;
+
+		public SafeSlotBasedPredicate(Identifier location, Function3<ItemStack, SlotReference, LivingEntity, TriState> trinketPredicate) {
+			this.location = location;
+			this.trinketPredicate = trinketPredicate;
+		}
+
+		@Override
+		public TriState isValid(World level, @Nullable LivingEntity entity, io.wispforest.accessories.api.slot.SlotType slotType, int slot, ItemStack stack) {
+			if(hasErrored) return TriState.DEFAULT;
+
+			try {
+				return this.trinketPredicate.apply(stack, new SlotReference(new CursedTrinketInventory(slotType, level.isClient()), slot), entity);
+			} catch (Exception e) {
+				this.hasErrored = true;
+				LOGGER.warn("Unable to handle Trinket Slot Predicate converted to Accessories Slot Predicate due to fundamental incompatibility, issues may be present with it! [Slot: {}, Predicate ID: {}]", slotType.name(), this.location, e);
+			}
+
+			return TriState.DEFAULT;
+		}
+	}
+
+	private static final class CursedTrinketInventory extends TrinketInventory {
+		public CursedTrinketInventory(io.wispforest.accessories.api.slot.SlotType slotType, boolean isClientSide) {
+			super(WrappedSlotType.of(slotType, isClientSide), null, inv -> {});
+		}
 	}
 }

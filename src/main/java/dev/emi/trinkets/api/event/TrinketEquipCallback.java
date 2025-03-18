@@ -25,17 +25,28 @@ package dev.emi.trinkets.api.event;
 
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.Trinket;
+import io.wispforest.accessories.api.events.AccessoryChangeCallback;
+import io.wispforest.accessories.api.events.SlotStateChange;
+import io.wispforest.accessories.impl.event.WrappedEvent;
+import io.wispforest.tclayer.compat.WrappingTrinketsUtils;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 
 public interface TrinketEquipCallback {
-	Event<TrinketEquipCallback> EVENT = EventFactory.createArrayBacked(TrinketEquipCallback.class,
-	listeners -> (stack, slot, entity) -> {
-		for (TrinketEquipCallback listener: listeners){
-			listener.onEquip(stack, slot, entity);
-		}
+	Event<TrinketEquipCallback> EVENT = new WrappedEvent<>(AccessoryChangeCallback.EVENT, callback -> {
+		return (prevStack, currentStack, reference, stateChange) -> {
+			var slotReference = WrappingTrinketsUtils.createTrinketsReference(reference);
+
+			if(slotReference.isEmpty()) return;
+
+			callback.onEquip(currentStack, slotReference.get(), reference.entity());
+		};
+	}, accessoryChangeCallbackEvent -> (stack, slot, entity) -> {
+		var ref = WrappingTrinketsUtils.createAccessoriesReference(slot).get();
+
+		accessoryChangeCallbackEvent.invoker().onChange(ref.getStack(), stack, ref, SlotStateChange.REPLACEMENT);
 	});
 
 	/**

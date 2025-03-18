@@ -28,6 +28,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
+import io.wispforest.tclayer.compat.WrappingTrinketsUtils;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -40,10 +41,12 @@ public class SlotAttributes {
 	/**
 	 * Adds an Entity Attribute Modifier for slot count to the provided multimap
 	 */
-	public static void addSlotModifier(Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> map, String slot, Identifier identifier, double amount,
-			EntityAttributeModifier.Operation operation) {
-		CACHED_ATTRIBUTES.putIfAbsent(slot, RegistryEntry.of(new SlotEntityAttribute(slot)));
-		map.put(CACHED_ATTRIBUTES.get(slot), new EntityAttributeModifier(identifier, amount, operation));
+	public static void addSlotModifier(Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> map, String slot, Identifier identifier, double amount, EntityAttributeModifier.Operation operation) {
+		var data = WrappingTrinketsUtils.splitGroupInfo(slot);
+
+		var slotType = WrappingTrinketsUtils.trinketsToAccessories_Slot(data.left(), data.right());
+
+		io.wispforest.accessories.api.attributes.SlotAttribute.addSlotModifier(map, slotType, identifier, amount, operation);
 	}
 
 	public static Identifier getIdentifier(SlotReference ref) {

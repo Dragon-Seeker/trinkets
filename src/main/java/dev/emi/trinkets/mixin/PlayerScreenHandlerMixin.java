@@ -95,6 +95,8 @@ public abstract class PlayerScreenHandlerMixin extends ScreenHandler implements 
 
 	@Inject(at = @At("RETURN"), method = "<init>")
 	private void init(PlayerInventory playerInv, boolean onServer, PlayerEntity owner, CallbackInfo info) {
+		if (true) return;
+
 		this.inventory = playerInv;
 		trinkets$updateTrinketSlots(true);
 	}

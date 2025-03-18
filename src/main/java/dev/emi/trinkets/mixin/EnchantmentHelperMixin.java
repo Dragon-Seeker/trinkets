@@ -55,11 +55,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * @author Patbox
  */
+// TODO: REIMPLEMENT CHECK?
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin {
 
 	@Inject(at = @At("TAIL"), method = "forEachEnchantment(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/enchantment/EnchantmentHelper$ContextAwareConsumer;)V")
 	private static void forEachTrinket(LivingEntity entity, EnchantmentHelper.ContextAwareConsumer contextAwareConsumer, CallbackInfo info) {
+		if (true) return;
 		Optional<TrinketComponent> optional = TrinketsApi.getTrinketComponent(entity);
 		if (optional.isPresent()) {
 			TrinketComponent comp = optional.get();
@@ -88,6 +90,7 @@ public abstract class EnchantmentHelperMixin {
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EquipmentSlot;values()[Lnet/minecraft/entity/EquipmentSlot;"), method = "chooseEquipmentWith")
 	private static void addTrinketsAsChoices(ComponentType<?> componentType, LivingEntity entity, Predicate<ItemStack> stackPredicate, CallbackInfoReturnable<Optional<EnchantmentEffectContext>> info, @Local List<EnchantmentEffectContext> list) {
+		if (true) return;
 		Optional<TrinketComponent> optional = TrinketsApi.getTrinketComponent(entity);
 		if (optional.isPresent()) {
 			TrinketComponent comp = optional.get();

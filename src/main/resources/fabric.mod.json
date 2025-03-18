@@ -1,11 +1,17 @@
 {
 	"schemaVersion": 1,
-	"id": "trinkets",
-	"version": "${version}",
+	"id": "tclayer",
+	"provides": [
+		"trinkets"
+	],
+	"version": "${version}+${layer_version}",
 
-	"name": "Trinkets",
-	"description": "Adds a data-driven accessory system to Minecraft",
+	"name": "Accessories Trinkets Compat Layer",
+	"description": "Adds Compatibility layer between Trinkets Based Mods and Accessories API",
 	"authors": [
+		"Blodhgarm"
+	],
+	"contributors": [
 		{
 			"name": "Emi",
 			"contact": {
@@ -20,20 +26,21 @@
 		}
 	],
 	"contact": {
-		"homepage": "https://www.curseforge.com/minecraft/mc-mods/trinkets-fabric",
-		"sources": "https://github.com/emilyploszaj/trinkets"
+		"sources": "https://github.com/wisp-forest/accessories"
 	},
 
 	"license": "MIT",
-	"icon": "assets/trinkets/icon.png",
+	"icon": "assets/tclayer/icon.png",
 
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"dev.emi.trinkets.TrinketsMain"
+			"dev.emi.trinkets.TrinketsMain",
+			"io.wispforest.tclayer.TCLayer"
 		],
 		"client": [
-			"dev.emi.trinkets.TrinketsClient"
+			"dev.emi.trinkets.TrinketsClient",
+			"io.wispforest.tclayer.client.TCLayerClient"
 		],
 		"cardinal-components-entity": [
 			"dev.emi.trinkets.TrinketsMain"
@@ -49,17 +56,25 @@
 	"custom": {
 		"cardinal-components": [
 			"trinkets:trinkets"
-		]
+		],
+		"modmenu": {
+			"badges": [ ],
+			"parent": {
+				"id": "accessories"
+			}
+		}
 	},
 	"mixins": [
-		"trinkets.mixins.json"
+		"trinkets.mixins.json",
+		"accessories-tclayer.mixins.json"
 	],
 
 	"depends": {
-		"minecraft": ">1.18",
-		"fabricloader": ">=0.7.0",
+		"minecraft": ">1.21",
+		"fabricloader": ">=0.16.10",
 		"cardinal-components-base": ">=3.0.0-0",
 		"cardinal-components-entity": ">=3.0.0-0",
-		"fabric-api": ">=0.51.2"
+		"fabric-api": ">=0.51.2",
+		"accessories": ">=1.1.0-beta.31+1.21.1"
 	}
 }

@@ -51,10 +51,10 @@ public class TrinketItem extends Item implements Trinket {
 
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		ItemStack stack = user.getStackInHand(hand);
-		if (equipItem(user, stack)) {
-			return TypedActionResult.success(stack, world.isClient());
-		}
+//		ItemStack stack = user.getStackInHand(hand);
+//		if (equipItem(user, stack)) {
+//			return TypedActionResult.success(stack, world.isClient());
+//		}
 		return super.use(world, user, hand);
 	}
 

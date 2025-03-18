@@ -192,7 +192,7 @@ public class TrinketInventory implements Inventory {
 			for (EntityAttributeModifier mod : this.getModifiersByOperation(EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
 				size *= mod.value();
 			}
-			LivingEntity entity = this.component.getEntity();
+			LivingEntity entity = this.component.entity();
 
 			if (size != this.size()) {
 				DefaultedList<ItemStack> newStacks = DefaultedList.ofSize((int) size, ItemStack.EMPTY);

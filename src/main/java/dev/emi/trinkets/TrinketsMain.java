@@ -32,6 +32,7 @@ import dev.emi.trinkets.api.*;
 import dev.emi.trinkets.payload.BreakPayload;
 import dev.emi.trinkets.payload.SyncInventoryPayload;
 import dev.emi.trinkets.payload.SyncSlotsPayload;
+import io.wispforest.tclayer.compat.WrappedTrinketComponent;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.item.ItemStack;
@@ -186,7 +187,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 
 	@Override
 	public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-		registry.registerFor(LivingEntity.class, TrinketsApi.TRINKET_COMPONENT, LivingEntityTrinketComponent::new);
-		registry.registerForPlayers(TrinketsApi.TRINKET_COMPONENT, LivingEntityTrinketComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
+		registry.registerFor(LivingEntity.class, TrinketsApi.TRINKET_COMPONENT, WrappedTrinketComponent::new);
+		registry.registerForPlayers(TrinketsApi.TRINKET_COMPONENT, WrappedTrinketComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
 	}
 }

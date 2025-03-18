@@ -40,7 +40,7 @@ import java.util.function.Predicate;
 
 public interface TrinketComponent extends ComponentV3 {
 
-	LivingEntity getEntity();
+	LivingEntity entity();
 
 	/**
 	 * @return A map of names to slot groups available to the entity

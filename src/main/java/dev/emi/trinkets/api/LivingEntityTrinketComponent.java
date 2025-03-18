@@ -72,7 +72,7 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 	}
 
 	@Override
-	public LivingEntity getEntity() {
+	public LivingEntity entity() {
 		return this.entity;
 	}
 

@@ -121,11 +121,11 @@ public class SlotLoader extends SinglePreparationResourceReloader<Map<String, Gr
 		return ID;
 	}
 
-	static class GroupData {
+	public static class GroupData {
 
 		private int slotId = -1;
 		private int order = 0;
-		private final Map<String, SlotData> slots = new HashMap<>();
+		public final Map<String, SlotData> slots = new HashMap<>();
 
 		void read(JsonObject jsonObject) {
 			slotId = JsonHelper.getInt(jsonObject, "slot_id", slotId);
@@ -145,18 +145,18 @@ public class SlotLoader extends SinglePreparationResourceReloader<Map<String, Gr
 		}
 	}
 
-	static class SlotData {
+	public static class SlotData {
 		private static final Set<Identifier> DEFAULT_QUICK_MOVE_PREDICATES = ImmutableSet.of(Identifier.of("trinkets", "all"));
 		private static final Set<Identifier> DEFAULT_VALIDATOR_PREDICATES = ImmutableSet.of(Identifier.of("trinkets", "tag"));
 		private static final Set<Identifier> DEFAULT_TOOLTIP_PREDICATES = ImmutableSet.of(Identifier.of("trinkets", "all"));
 
-		private int order = 0;
-		private int amount = -1;
-		private String icon = "";
-		private final Set<String> quickMovePredicates = new HashSet<>();
-		private final Set<String> validatorPredicates = new HashSet<>();
-		private final Set<String> tooltipPredicates = new HashSet<>();
-		private String dropRule = DropRule.DEFAULT.toString();
+		public int order = 0;
+		public int amount = -1;
+		public String icon = "";
+		public final Set<String> quickMovePredicates = new HashSet<>();
+		public final Set<String> validatorPredicates = new HashSet<>();
+		public final Set<String> tooltipPredicates = new HashSet<>();
+		public String dropRule = DropRule.DEFAULT.toString();
 
 		SlotType create(String group, String name) {
 			Identifier finalIcon = Identifier.of(icon);

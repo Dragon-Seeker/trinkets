@@ -50,6 +50,8 @@ public abstract class LivingEntityRendererMixin {
 
 	@Inject(at = @At("RETURN"), method = "<init>")
 	public void init(EntityRendererFactory.Context ctx, EntityModel<?> model, float shadowRadius, CallbackInfo info) {
+        if (true) return;
+
         this.invokeAddFeature(new TrinketFeatureRenderer<>((LivingEntityRenderer<?, ?>) (Object) this));
 	}
 }

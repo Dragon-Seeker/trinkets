@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -17,6 +17,10 @@ repositories {
 		name = "Ladysnake Libs"
 		url = 'https://maven.ladysnake.org/releases'
 	}
+	maven { url = 'https://maven.wispforest.io/releases' }
+	maven { url = "https://api.modrinth.com/maven" }
+	maven { url = "https://server.bbkr.space/artifactory/libs-release" }
+	maven { url = 'https://maven.gegy.dev' }
 }
 
 sourceSets {
@@ -48,6 +52,15 @@ dependencies {
 	modApi include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
 	modApi include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
 
+	modApi ("io.wispforest:accessories-fabric:${project.accessories_version}")
+
+	modImplementation annotationProcessor("io.wispforest:owo-lib:${rootProject.owo_version}")
+
+	implementation("io.wispforest:endec:0.1.5")
+	implementation("io.wispforest.endec:netty:0.1.2")
+	implementation("io.wispforest.endec:gson:0.1.3")
+	implementation("io.wispforest.endec:jankson:0.1.3")
+
 	// Optional mod dependencies
 	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 	modCompileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin-fabric:${project.rei_version}"
@@ -59,13 +72,23 @@ dependencies {
 	//modLocalRuntime "dev.emi:emi-fabric:${emi_version}"
 	//modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
 	//modLocalRuntime "com.terraformersmc:modmenu:${project.mod_menu_version}"
+
+	modLocalRuntime "maven.modrinth:scarves:1.4.3+1.21.1"
+	modLocalRuntime ("io.github.cottonmc:LibGui:11.1.0+1.21")
+	modLocalRuntime ("io.github.cottonmc:Jankson-Fabric:8.0.0+j1.2.3")
+	modLocalRuntime ("io.github.queerbric:pridelib:1.2.1+1.21")
+	modLocalRuntime ("maven.modrinth:mD4QIZsg:1.1.1+1.21.1") //Static Data
+
+	modLocalRuntime "maven.modrinth:petworks:0.2.0-alpha.2+mc.1.21.1-fabric"
 }
 
 processResources {
-	inputs.property "version", project.version
+	inputs.property "version", project.mod_version
+	inputs.property "layer_version", project.layer_version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.mod_version,
+				"layer_version": project.layer_version
 	}
 }
 

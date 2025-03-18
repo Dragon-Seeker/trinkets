@@ -47,6 +47,8 @@ import dev.emi.trinkets.api.SlotGroup;
 import dev.emi.trinkets.data.SlotLoader.GroupData;
 import dev.emi.trinkets.data.SlotLoader.SlotData;
 import dev.emi.trinkets.payload.SyncSlotsPayload;
+import io.wispforest.tclayer.ImmutableDelegatingMap;
+import io.wispforest.tclayer.compat.WrappingTrinketsUtils;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceReloadListenerKeys;
@@ -62,13 +64,25 @@ import net.minecraft.util.profiler.Profiler;
 
 public class EntitySlotLoader extends SinglePreparationResourceReloader<Map<String, Map<String, Set<String>>>> implements IdentifiableResourceReloadListener {
 
-	public static final EntitySlotLoader CLIENT = new EntitySlotLoader();
-	public static final EntitySlotLoader SERVER = new EntitySlotLoader();
+	public static final EntitySlotLoader CLIENT = new EntitySlotLoader(true);
+	public static final EntitySlotLoader SERVER = new EntitySlotLoader(false);
 
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 	private static final Identifier ID = Identifier.of(TrinketsMain.MOD_ID, "entities");
 
 	private final Map<EntityType<?>, Map<String, SlotGroup>> slots = new HashMap<>();
+
+	private boolean isClient = false;
+
+	public EntitySlotLoader(boolean isClient) {
+		this();
+
+		this.isClient = isClient;
+	}
+
+	public EntitySlotLoader() {
+		super();
+	}
 
 	@Override
 	protected Map<String, Map<String, Set<String>>> prepare(ResourceManager resourceManager, Profiler profiler) {
@@ -146,8 +160,12 @@ public class EntitySlotLoader extends SinglePreparationResourceReloader<Map<Stri
 		return map;
 	}
 
+	public final Map<EntityType<?>, Map<String, Set<String>>> slotInfo = new HashMap<>();
+
 	@Override
 	protected void apply(Map<String, Map<String, Set<String>>> loader, ResourceManager manager, Profiler profiler) {
+		slotInfo.clear();
+
 		Map<String, GroupData> slots = SlotLoader.INSTANCE.getSlots();
 		Map<EntityType<?>, Map<String, SlotGroup.Builder>> groupBuilders = new HashMap<>();
 
@@ -176,6 +194,10 @@ public class EntitySlotLoader extends SinglePreparationResourceReloader<Map<Stri
 			}
 
 			for (EntityType<?> type : types) {
+				slotInfo.put(type, ImmutableMap.copyOf(groups));
+				// Keep code there but just don't run it
+				if (true) continue;
+
 				Map<String, SlotGroup.Builder> builders = groupBuilders.computeIfAbsent(type, (k) -> new HashMap<>());
 				groups.forEach((groupName, slotNames) -> {
 					GroupData group = slots.get(groupName);
@@ -200,6 +222,7 @@ public class EntitySlotLoader extends SinglePreparationResourceReloader<Map<Stri
 		});
 		this.slots.clear();
 
+		if (true) return;
 		groupBuilders.forEach((entity, groups) -> {
 			Map<String, SlotGroup> entitySlots = this.slots.computeIfAbsent(entity, (k) -> new HashMap<>());
 			groups.forEach((groupName, groupBuilder) -> entitySlots.putIfAbsent(groupName, groupBuilder.build()));
@@ -207,10 +230,7 @@ public class EntitySlotLoader extends SinglePreparationResourceReloader<Map<Stri
 	}
 
 	public Map<String, SlotGroup> getEntitySlots(EntityType<?> entityType) {
-		if (this.slots.containsKey(entityType)) {
-			return ImmutableMap.copyOf(this.slots.get(entityType));
-		}
-		return ImmutableMap.of();
+		return ImmutableDelegatingMap.slotGroups(WrappingTrinketsUtils.getGroupedSlots(this.isClient, entityType), this.isClient);
 	}
 
 	public void setSlots(Map<EntityType<?>, Map<String, SlotGroup>> slots) {
@@ -219,10 +239,12 @@ public class EntitySlotLoader extends SinglePreparationResourceReloader<Map<Stri
 	}
 
 	public void sync(ServerPlayerEntity playerEntity) {
+		if (true) return;
 		ServerPlayNetworking.send(playerEntity, new SyncSlotsPayload(Map.copyOf(this.slots)));
 	}
 
 	public void sync(List<? extends ServerPlayerEntity> players) {
+		if (true) return;
 		SyncSlotsPayload packet = new SyncSlotsPayload(Map.copyOf(this.slots));
 		players.forEach(player -> ServerPlayNetworking.send(player, packet));
 		players.forEach(player -> ((TrinketPlayerScreenHandler) player.playerScreenHandler).trinkets$updateTrinketSlots(true));

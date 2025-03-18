@@ -1,30 +1,9 @@
-# Trinkets
-A data-driven accessory mod for Minecraft using Fabric.
+# Trinkets Compatibility Layer for Accessories
 
-![Image of the Trinkets UI](https://user-images.githubusercontent.com/14813658/221322531-2ddb822f-531c-44b2-84c7-bef8b8064b55.png)
+## Overview
 
-## About
-Trinkets adds a slot group and slot system to Minecraft. Slot groups are collections of slots for a certain body part or more vague area. By default there are 6 slot groups (head, chest, legs, feet, offhand, hand) that can have slots added to them, but more groups can be added if desired. Trinkets' UI is intuitive to use, accessible, and attempts to do away with clutter. Its system means that you'll never have a slot that's not used for anything, as mods request the slots they want.
+This is a fork of Trinkets that uses the [Accessories API](https://github.com/wisp-forest/accessories) under the hood rather than Trinkets API allowing for a unified Accessory System. All credit goes to EMI and C4 for the design and Code of Trinkets and the given project continues the use of the MIT license.
 
-## Developers
-To add Trinkets to your project you need to add jitpack and nerdhubmc to your repositories in your build.gradle
-```gradle
-repositories {
-	maven {
-		name = "TerraformersMC"
-		url = "https://maven.terraformersmc.com/"
-	}
-	maven {
-		name = "Ladysnake Libs"
-		url = 'https://maven.ladysnake.org/releases'
-	}
-}
-```
-And then to add Trinkets you add it as a dependency in your build.gradle
-```gradle
-dependencies {
-	modImplementation "dev.emi:trinkets:${trinkets_version}"
-}
-```
+The iteration being V2 has the added benifit to allow the end user to go back and forth if needed between using and not using the compat layer combined with preserving more code to keep binary compatbile.
 
-For basic tutorials and comprehensive documentation, visit this repository's [wiki](https://github.com/emilyploszaj/trinkets/wiki/Home).
+All bugs and issues should be reported on the [Accessories Repo Issues](https://github.com/wisp-forest/accessories/issues) instead of here.

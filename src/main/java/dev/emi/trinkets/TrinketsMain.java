@@ -73,9 +73,9 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 
 	@Override
 	public void onInitialize() {
-		ResourceManagerHelper resourceManagerHelper = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
-		resourceManagerHelper.registerReloadListener(SlotLoader.INSTANCE);
-		resourceManagerHelper.registerReloadListener(EntitySlotLoader.SERVER);
+//		ResourceManagerHelper resourceManagerHelper = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+//		resourceManagerHelper.registerReloadListener(SlotLoader.INSTANCE);
+//		resourceManagerHelper.registerReloadListener(EntitySlotLoader.SERVER);
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success)
 				-> EntitySlotLoader.SERVER.sync(server.getPlayerManager().getPlayerList()));
 		UseItemCallback.EVENT.register((player, world, hand) -> {
